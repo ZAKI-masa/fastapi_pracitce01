@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafe Menu</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 48px 20px;
+      color: #382b24;
+      background: #fffaf5;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+    }
+
+    h1 {
+      margin: 0 0 32px;
+      text-align: center;
+      font-size: 2rem;
+    }
+
+    .menu-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .menu-card {
+      overflow: hidden;
+      border-radius: 12px;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(56, 43, 36, 0.12);
+    }
+
+    .menu-card img {
+      display: block;
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #eadfd5;
+    }
+
+    .menu-card__body {
+      padding: 18px;
+    }
+
+    .menu-card__name {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .menu-card__category {
+      display: inline-block;
+      margin: 0 0 10px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      color: #795548;
+      background: #f4e8df;
+      font-size: 0.85rem;
+    }
+
+    .menu-card__price {
+      margin: 0;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .message {
+      text-align: center;
+    }
+
+    .error {
+      color: #b3261e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cafe Menu</h1>
+  <main id="menu-list" class="menu-list" aria-live="polite">
+    <p class="message">メニューを読み込んでいます...</p>
+  </main>
+
+  <script>
+    const apiUrl = "http://127.0.0.1:8000/menus";
+    const menuList = document.getElementById("menu-list");
+
+    // APIからメニュー一覧を取得して、カードとして表示する。
+    async function displayMenus() {
+      try {
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`HTTPエラー: ${response.status}`);
+        }
+
+        const menus = await response.json();
+
+        menuList.innerHTML = "";
+        menus.forEach((menu) => {
+          const card = document.createElement("article");
+          card.className = "menu-card";
+
+          const image = document.createElement("img");
+          image.src = menu.image || "https://placehold.jp/eadfd5/795548/300x200.png?text=No+Image";
+          image.alt = `${menu.name}の画像`;
+
+          const body = document.createElement("div");
+          body.className = "menu-card__body";
+
+          const name = document.createElement("h2");
+          name.className = "menu-card__name";
+          name.textContent = menu.name;
+
+          const category = document.createElement("p");
+          category.className = "menu-card__category";
+          category.textContent = menu.category;
+
+          const price = document.createElement("p");
+          price.className = "menu-card__price";
+          price.textContent = `${menu.price.toLocaleString()}円`;
+
+          body.append(name, category, price);
+          card.append(image, body);
+          menuList.append(card);
+        });
+      } catch (error) {
+        menuList.innerHTML = '<p class="message error">メニューを取得できませんでした。APIが起動しているか確認してください。</p>';
+        console.error(error);
+      }
+    }
+
+    displayMenus();
+  </script>
+</body>
+</html>
